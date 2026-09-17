@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "promptpipe"
+version = "0.1.0"
+description = "Appendix E of the AI Prompt Engineer Global Standards, made executable."
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+pe = "promptpipe.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+promptpipe = ["schemas/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

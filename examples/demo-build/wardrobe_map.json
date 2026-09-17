@@ -1,0 +1,59 @@
+{
+  "outfits": {
+    "1": {
+      "BASE": "day1-base",
+      "MID": "day1-mid",
+      "OUTER": "day1-outer",
+      "LOWER": "day1-lower",
+      "FOOT": "day1-foot",
+      "ACCENT": "day1-accent"
+    },
+    "2": {
+      "BASE": "day2-base",
+      "MID": "day2-mid",
+      "OUTER": "day2-outer",
+      "LOWER": "day2-lower",
+      "FOOT": "day2-foot",
+      "ACCENT": "day2-accent"
+    },
+    "3": {
+      "BASE": "day3-base",
+      "MID": "day3-mid",
+      "OUTER": "day3-outer",
+      "LOWER": "day3-lower",
+      "FOOT": "day3-foot",
+      "ACCENT": "day3-accent"
+    }
+  },
+  "capture_events": {
+    "E-01": {
+      "story_day": "1",
+      "location": "L-01",
+      "visibility": "CONCEALED"
+    },
+    "E-02": {
+      "story_day": "1",
+      "location": "L-02",
+      "visibility": "CONCEALED"
+    },
+    "E-03": {
+      "story_day": "1",
+      "location": "L-03",
+      "visibility": "CONCEALED"
+    },
+    "E-04": {
+      "story_day": "2",
+      "location": "L-02",
+      "visibility": "VISIBLE"
+    },
+    "E-05": {
+      "story_day": "3",
+      "location": "L-04",
+      "visibility": "REVEAL"
+    }
+  },
+  "generic_pool": [],
+  "signature_items": {
+    "narrator": "a worn leather watch strap"
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "phrases": [
+    {
+      "id": "P-001",
+      "text": "Braces",
+      "triggers": [
+        "list-item"
+      ],
+      "disposition": "BR-01",
+      "demo": "SIDE-BY-SIDE",
+      "plant": "",
+      "payoff": "",
+      "blocked_reason": "",
+      "blocked_section": ""
+    },
+    {
+      "id": "P-002",
+      "text": "creams",
+      "triggers": [
+        "list-item"
+      ],
+      "disposition": "BR-02",
+      "demo": "SIDE-BY-SIDE",
+      "plant": "",
+      "payoff": "",
+      "blocked_reason": "",
+      "blocked_section": ""
+    },
+    {
+      "id": "P-003",
+      "text": "magnets",
+      "triggers": [
+        "list-item"
+      ],
+      "disposition": "BR-03",
+      "demo": "SIDE-BY-SIDE",
+      "plant": "",
+      "payoff": "",
+      "blocked_reason": "",
+      "blocked_section": ""
+    },
+    {
+      "id": "P-004",
+      "text": "patches",
+      "triggers": [
+        "list-item"
+      ],
+      "disposition": "BR-04",
+      "demo": "SIDE-BY-SIDE",
+      "plant": "",
+      "payoff": "",
+      "blocked_reason": "",
+      "blocked_section": ""
+    },
+    {
+      "id": "P-005",
+      "text": "Nothing worked.",
+      "triggers": [],
+      "disposition": "TH-01",
+      "demo": "",
+      "plant": "",
+      "payoff": "",
+      "blocked_reason": "",
+      "blocked_section": ""
+    },
+    {
+      "id": "P-006",
+      "text": "Every morning I stood at the top of the stairs and counted to three.",
+      "triggers": [],
+      "disposition": "BR-05",
+      "demo": "ANCHOR",
+      "plant": "",
+      "payoff": "",
+      "blocked_reason": "",
+      "blocked_section": ""
+    },
+    {
+      "id": "P-007",
+      "text": "Then my physio showed me something different.",
+      "triggers": [],
+      "disposition": "TH-02",
+      "demo": "",
+      "plant": "",
+      "payoff": "",
+      "blocked_reason": "",
+      "blocked_section": ""
+    },
+    {
+      "id": "P-008",
+      "text": "It sits under the joint and takes the load before the joint does.",
+      "triggers": [],
+      "disposition": "MECH-01",
+      "demo": "SENSE: load ache → RELIEF: the load lands on the band",
+      "plant": "",
+      "payoff": "",
+      "blocked_reason": "",
+      "blocked_section": ""
+    },
+    {
+      "id": "P-009",
+      "text": "Two weeks later I was carrying the shopping up in one trip.",
+      "triggers": [],
+      "disposition": "BR-06",
+      "demo": "LOAD",
+      "plant": "",
+      "payoff": "",
+      "blocked_reason": "",
+      "blocked_section": ""
+    }
+  ]
+}
