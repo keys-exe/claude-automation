@@ -10,6 +10,11 @@ doc-lint. This repo implements all of it as a CLI (`pe`) and wires it into Claud
 
 ## Install
 
+On **claude.ai/code** there is nothing to install — a `SessionStart` hook sets the
+container up on every session and `pe` is on the PATH when you start typing.
+
+On your own machine:
+
 ```bash
 pip install -e .
 pe steps

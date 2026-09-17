@@ -70,7 +70,7 @@ as scripts over the tree and never as memory.
 ## Working on the tooling
 
 ```bash
-pip install -e .
+pip install -e .          # web sessions do this automatically via the SessionStart hook
 python -m pytest -q
 ```
 
