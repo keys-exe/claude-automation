@@ -1,0 +1,1055 @@
+<title>Beat Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EFF1EE; --surface:#FFFFFF; --surface-2:#F7F8F6; --surface-3:#E8EBE6;
+  --ink:#15181B; --muted:#5A626B; --rule:#D5D9D3; --rule-strong:#B9BFB8;
+  --accent:#2E3AA8; --accent-ink:#FFFFFF; --accent-soft:#E5E7F6;
+  --pass:#1C6B45; --pass-bg:#E2EFE8;
+  --warn:#8A5A00; --warn-bg:#F5EBD8;
+  --fail:#A8271F; --fail-bg:#F6E3E1;
+  --shadow:0 1px 2px rgba(20,24,28,.06), 0 8px 24px -16px rgba(20,24,28,.35);
+  --display:'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --body:'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono:'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1114; --surface:#161A1E; --surface-2:#1C2126; --surface-3:#252B31;
+    --ink:#E7EAE6; --muted:#98A1A9; --rule:#2A3138; --rule-strong:#3C444C;
+    --accent:#939CF2; --accent-ink:#11131F; --accent-soft:#232842;
+    --pass:#63CC97; --pass-bg:#16291F;
+    --warn:#E2AC55; --warn-bg:#2C2314;
+    --fail:#F0837A; --fail-bg:#2E1A18;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1114; --surface:#161A1E; --surface-2:#1C2126; --surface-3:#252B31;
+  --ink:#E7EAE6; --muted:#98A1A9; --rule:#2A3138; --rule-strong:#3C444C;
+  --accent:#939CF2; --accent-ink:#11131F; --accent-soft:#232842;
+  --pass:#63CC97; --pass-bg:#16291F;
+  --warn:#E2AC55; --warn-bg:#2C2314;
+  --fail:#F0837A; --fail-bg:#2E1A18;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--body); font-size:14px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:var(--display); margin:0; text-wrap:balance; letter-spacing:-.01em}
+button,input,select,textarea{font:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:3px}
+.mono{font-family:var(--mono); font-variant-numeric:tabular-nums}
+.sec{font-family:var(--mono); font-size:11px; color:var(--muted)}
+
+/* header */
+header{
+  position:sticky; top:env(safe-area-inset-top, 0px); z-index:20;
+  background:var(--surface); border-bottom:1px solid var(--rule);
+  display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px;
+  padding-block:10px; padding-left:16px; padding-right:16px;
+}
+.brand{display:flex; align-items:baseline; gap:10px; margin-right:auto; min-width:0}
+.brand h1{font-size:16px; font-weight:700; letter-spacing:-.02em}
+.chip{
+  font-family:var(--mono); font-size:11px; padding:3px 7px; border-radius:3px;
+  border:1px solid var(--rule); background:var(--surface-2); color:var(--muted);
+  white-space:nowrap;
+}
+.chip.ok{color:var(--pass); background:var(--pass-bg); border-color:transparent}
+.chip.warn{color:var(--warn); background:var(--warn-bg); border-color:transparent}
+.chip.bad{color:var(--fail); background:var(--fail-bg); border-color:transparent}
+.btn{
+  background:var(--surface-2); border:1px solid var(--rule-strong); border-radius:4px;
+  padding:5px 11px; font-size:13px; font-weight:500; cursor:pointer;
+}
+.btn:hover{background:var(--surface-3)}
+.btn.primary{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+
+/* shell */
+.shell{
+  display:grid; grid-template-columns:216px minmax(0,1fr) 330px; gap:0;
+  align-items:start; min-height:0;
+}
+@media (max-width:1100px){ .shell{grid-template-columns:minmax(0,1fr)} }
+
+/* step rail */
+.rail{
+  border-right:1px solid var(--rule); background:var(--surface);
+  min-height:calc(100dvh - 53px - env(safe-area-inset-top, 0px));
+  padding-block:14px; padding-left:16px; padding-right:12px;
+  position:sticky; top:calc(52px + env(safe-area-inset-top, 0px));
+}
+.rail h2{font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--muted); margin-bottom:10px}
+.steps{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1px}
+.step{display:grid; grid-template-columns:18px 1fr; gap:8px; align-items:start; padding:5px 6px; border-radius:4px}
+.step .n{font-family:var(--mono); font-size:11px; color:var(--muted); padding-top:1px}
+.step .t{font-size:12.5px; line-height:1.35}
+.step small{display:block; font-family:var(--mono); font-size:10px; color:var(--muted)}
+.step.gate{background:var(--accent-soft)}
+.step.gate .t{font-weight:600}
+.step.live{background:var(--surface-3)}
+@media (max-width:1100px){
+  .rail{position:static; border-right:0; border-bottom:1px solid var(--rule); padding-right:16px; min-height:0}
+  .steps{flex-direction:row; overflow-x:auto; gap:6px; padding-bottom:4px}
+  .step{min-width:168px; border:1px solid var(--rule)}
+}
+
+/* center */
+main{padding-block:16px; padding-left:16px; padding-right:16px; min-width:0}
+.tabs{display:flex; flex-wrap:wrap; gap:4px; margin-bottom:14px}
+.tab{
+  background:transparent; border:1px solid transparent; border-radius:4px;
+  padding:5px 10px; font-size:13px; font-weight:500; color:var(--muted); cursor:pointer;
+}
+.tab:hover{background:var(--surface-2); color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--surface); border-color:var(--rule); color:var(--ink); box-shadow:var(--shadow)}
+.tab .badge{font-family:var(--mono); font-size:10px; margin-left:6px; color:var(--muted)}
+.panel{background:var(--surface); border:1px solid var(--rule); border-radius:6px; box-shadow:var(--shadow)}
+.panel-hd{
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px;
+  padding:11px 14px; border-bottom:1px solid var(--rule);
+}
+.panel-hd h3{font-size:13px; font-weight:600; margin-right:auto}
+.panel-bd{padding:14px}
+.hint{color:var(--muted); font-size:12.5px; margin:0 0 12px; max-width:62ch}
+.hint code{font-family:var(--mono); font-size:11.5px; background:var(--surface-2); padding:1px 4px; border-radius:3px}
+
+textarea, input[type=text], select{
+  width:100%; background:var(--surface-2); color:var(--ink);
+  border:1px solid var(--rule); border-radius:4px; padding:8px 10px;
+}
+textarea{font-family:var(--mono); font-size:12.5px; line-height:1.6; resize:vertical; min-height:120px}
+input[type=text]{font-family:var(--mono); font-size:12px; padding:5px 7px}
+select{font-size:12px; padding:5px 6px; width:auto}
+
+.tablewrap{overflow-x:auto; border:1px solid var(--rule); border-radius:5px}
+table{border-collapse:collapse; width:100%; font-size:12.5px}
+th{
+  text-align:left; font-family:var(--mono); font-size:10px; font-weight:500;
+  text-transform:uppercase; letter-spacing:.06em; color:var(--muted);
+  padding:7px 9px; border-bottom:1px solid var(--rule); background:var(--surface-2);
+  position:sticky; top:0; white-space:nowrap;
+}
+td{padding:6px 9px; border-bottom:1px solid var(--rule); vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.id{font-family:var(--mono); font-size:11.5px; color:var(--muted); white-space:nowrap}
+td.txt{min-width:220px; max-width:430px}
+tr.bad td{background:var(--fail-bg)}
+tr.blocked td{background:var(--warn-bg)}
+.trig{display:inline-block; font-family:var(--mono); font-size:9.5px; color:var(--muted); border:1px solid var(--rule); border-radius:3px; padding:0 4px; margin:1px 3px 1px 0}
+.trig.review{color:var(--warn); border-color:currentColor}
+
+.recon{
+  font-family:var(--mono); font-size:11.5px; line-height:1.7;
+  padding:10px 12px; border-radius:5px; border-left:3px solid var(--pass);
+  background:var(--pass-bg); color:var(--pass); overflow-wrap:anywhere;
+}
+.recon.bad{border-left-color:var(--fail); background:var(--fail-bg); color:var(--fail)}
+
+/* gates */
+.gates{
+  border-left:1px solid var(--rule); background:var(--surface);
+  min-height:calc(100dvh - 53px - env(safe-area-inset-top, 0px));
+  padding-block:16px; padding-left:14px; padding-right:16px;
+  position:sticky; top:calc(52px + env(safe-area-inset-top, 0px));
+  max-height:calc(100dvh - 52px); overflow-y:auto;
+}
+@media (max-width:1100px){
+  .gates{position:static; border-left:0; border-top:1px solid var(--rule); max-height:none; min-height:0; padding-left:16px}
+}
+.gates h2{font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--muted); margin-bottom:4px}
+.gates .sub{font-family:var(--mono); font-size:11px; color:var(--muted); margin-bottom:12px}
+.gate{display:grid; grid-template-columns:44px 1fr; gap:9px; padding:8px 0; border-top:1px solid var(--rule)}
+.gate:first-of-type{border-top:0}
+.gate .st{font-family:var(--mono); font-size:10px; font-weight:600; letter-spacing:.04em; padding-top:2px}
+.gate .st.PASS{color:var(--pass)} .gate .st.FAIL{color:var(--fail)}
+.gate .st.QUEUED{color:var(--muted)} .gate .st.WARN{color:var(--warn)}
+.gate .nm{font-family:var(--mono); font-size:11.5px; font-weight:500}
+.gate .dt{font-size:11.5px; color:var(--muted); overflow-wrap:anywhere}
+.gate .fx{font-size:11.5px; color:var(--fail); margin-top:3px}
+.meter{height:4px; border-radius:2px; background:var(--surface-3); overflow:hidden; margin-top:6px}
+.meter i{display:block; height:100%; background:var(--pass)}
+.meter i.warn{background:var(--warn)} .meter i.bad{background:var(--fail)}
+
+/* beats + strings */
+.split{display:grid; grid-template-columns:200px minmax(0,1fr); gap:14px}
+@media (max-width:760px){ .split{grid-template-columns:minmax(0,1fr)} }
+.picker{border:1px solid var(--rule); border-radius:5px; overflow:hidden; max-height:420px; overflow-y:auto}
+.pick{
+  display:block; width:100%; text-align:left; background:transparent; border:0;
+  border-bottom:1px solid var(--rule); padding:7px 10px; cursor:pointer; font-size:12px;
+}
+.pick:hover{background:var(--surface-2)}
+.pick[aria-current="true"]{background:var(--accent-soft)}
+.pick b{font-family:var(--mono); font-size:11.5px; font-weight:600; display:block}
+.pick span{color:var(--muted); font-size:11px; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.fieldrow{display:flex; flex-wrap:wrap; gap:10px 14px; align-items:end; margin-bottom:12px}
+.field{display:flex; flex-direction:column; gap:3px}
+.field label{font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
+.editor{margin-bottom:14px}
+.editor .lbl{display:flex; align-items:baseline; gap:8px; margin-bottom:5px}
+.editor .lbl h4{font-family:var(--mono); font-size:11.5px; font-weight:600; margin:0}
+.count{font-family:var(--mono); font-size:11px; color:var(--muted); margin-left:auto}
+.count.bad{color:var(--fail); font-weight:600}
+.slist{display:flex; flex-direction:column; gap:6px; max-height:560px; overflow-y:auto; padding-right:4px}
+.sitem{border:1px solid var(--rule); border-radius:5px; background:var(--surface-2)}
+.sitem summary{padding:7px 10px; cursor:pointer; display:flex; flex-wrap:wrap; align-items:baseline; gap:8px; list-style:none}
+.sitem summary::-webkit-details-marker{display:none}
+.sitem summary b{font-family:var(--mono); font-size:12px; font-weight:600}
+.sitem summary .d{font-size:11.5px; color:var(--muted); flex:1 1 180px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.sitem pre{
+  margin:0; padding:10px; border-top:1px solid var(--rule); background:var(--surface);
+  font-family:var(--mono); font-size:11.5px; line-height:1.65; white-space:pre-wrap; overflow-wrap:anywhere;
+}
+.sitem .acts{display:flex; gap:6px; padding:8px 10px; border-top:1px solid var(--rule)}
+.empty{color:var(--muted); font-size:12.5px; padding:20px 0; text-align:center}
+.foot{padding:18px 16px 28px; color:var(--muted); font-size:11.5px; text-align:center}
+.foot a{color:var(--accent)}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header>
+  <div class="brand">
+    <h1>Beat Console</h1>
+    <span class="chip mono" id="verChip">Standards —</span>
+  </div>
+  <span class="chip" id="exampleChip" hidden>example build</span>
+  <span class="chip" id="saveChip">local only</span>
+  <button class="btn" id="resetBtn">Reset to example</button>
+  <button class="btn primary" id="exportBtn">Export build</button>
+</header>
+
+<div class="shell">
+  <nav class="rail" aria-label="Build order">
+    <h2>§18 build order</h2>
+    <ol class="steps" id="steps"></ol>
+  </nav>
+
+  <main>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <section class="panel" id="pane"></section>
+    <p class="foot">
+      Gates computed from <span class="mono" id="verFoot">V7.49.8</span> of the Global Standards.
+      Nothing here is a threshold from memory — every number traces to a section.
+    </p>
+  </main>
+
+  <aside class="gates" id="gates" aria-live="polite">
+    <h2>Gates</h2>
+    <div class="sub" id="gateScope">—</div>
+    <div id="gateList"></div>
+  </aside>
+</div>
+
+<script>
+const DATA = /*STRINGS_JSON*/null;
+const SLOT_SOURCES = DATA.slotSources;
+const STRINGS = DATA.strings;
+const BY_ID = Object.fromEntries(STRINGS.map(s => [s.id, s]));
+
+/* ---------- the checks, ported from the pipeline ---------- */
+const KLING_CEILING = 2500;                                    // §37 / E1
+const WORD_TABLE = { brisk:{5:9,10:20}, unhurried:{5:8,10:18} }; // §28H
+const BEAT_TYPES = ["BR","TH","MECH","PRODUCT","CTA"];
+const PRODUCT_STATES = ["absent","worn","held","seated","demo"];
+const VISIBILITY = ["CONCEALED","VISIBLE","REVEAL"];
+const SLOT_RE = /\[([A-Z][A-Z0-9 \-\/]*)\]/g;
+const BRACKET_RE = /\[[^\]]{1,200}\]/g;
+const WORD_RE = /[A-Za-z0-9'’\-]+/g;
+
+const minify = s => String(s || "").split(/\s+/).filter(Boolean).join(" ");
+const charCount = s => minify(s).length;
+const wordCount = s => (String(s || "").match(WORD_RE) || []).length;
+
+function durationFor(words, pace){
+  const table = WORD_TABLE[pace] || WORD_TABLE.brisk;
+  for (const secs of [5,10]) if (words <= table[secs]) return secs;
+  return null;
+}
+function checkWordBudget(dialogue, duration, pace, talkingWhileDoing){
+  if (talkingWhileDoing) pace = "unhurried";              // movement eats tempo
+  const words = wordCount(dialogue), table = WORD_TABLE[pace] || WORD_TABLE.brisk;
+  if (!table[duration]) return gate("word_budget","FAIL", duration + "s is not a §28H duration",
+    "Use 5s or 10s, or split the line (§29)");
+  const ceiling = table[duration];
+  if (words <= ceiling) return gate("word_budget","PASS", words + " words ≤ " + ceiling + " at " + pace + "/" + duration + "s");
+  const suggested = durationFor(words, pace);
+  return gate("word_budget","FAIL", words + " words > " + ceiling + " at " + pace + "/" + duration + "s",
+    (suggested ? "raise duration to " + suggested + "s (E7)" : "split the line per §29") + " — never squeeze");
+}
+function checkCharBudget(text, klingDirect){
+  const n = charCount(text);
+  if (!klingDirect) return gate("char_count","PASS", n + " chars (Higgsfield-routed, no ceiling)");
+  if (n <= KLING_CEILING) return gate("char_count","PASS", n + " ≤ " + KLING_CEILING + " minified");
+  return gate("char_count","FAIL", n + " > " + KLING_CEILING + " minified",
+    "Trim ladder (§37), recount — over by " + (n - KLING_CEILING));
+}
+function checkPunctuation(dialogue){
+  const found = [];
+  if (/…|\.\.\./.test(dialogue)) found.push("ellipsis");
+  if (/—/.test(dialogue)) found.push("em-dash");
+  if (/–/.test(dialogue)) found.push("en-dash");
+  if (!found.length) return gate("punctuation","PASS","full stops and commas only");
+  return gate("punctuation","FAIL", found.join(", "),
+    "Ellipses are banned; em-dashes generate unpredictable holds (§28H)");
+}
+function closureWord(dialogue){
+  const words = String(dialogue || "").match(WORD_RE) || [];
+  for (const group of ["mbp","fv"])
+    for (const w of words)
+      if ([...group].some(ch => w.toLowerCase().includes(ch))) return w;
+  return null;
+}
+function checkSyncAnchor(dialogue, boundMove, closure){
+  if (boundMove || closure)
+    return gate("sync_anchor","PASS", (boundMove ? "bound move" : "closure word") + ": " + (boundMove || closure));
+  const suggestion = closureWord(dialogue);
+  return gate("sync_anchor","FAIL","no bound move word and no closure word",
+    "Bind a word to a visible move, or set a closure word" + (suggestion ? " (candidate: " + suggestion + ")" : "") + " — §28H");
+}
+function slotTokens(text){
+  const out = []; let m; SLOT_RE.lastIndex = 0;
+  while ((m = SLOT_RE.exec(text))) if (!out.includes(m[1])) out.push(m[1]);
+  return out;
+}
+function residualBrackets(text){ return String(text || "").match(BRACKET_RE) || []; }
+function gate(name, status, detail, fix){ return {name, status, detail, fix: fix || ""}; }
+
+/* §27 mechanical phrase pass */
+function splitScript(script){
+  const phrases = []; let n = 0;
+  for (const raw of String(script || "").match(/[^.!?]+[.!?]?/g) || []){
+    const sentence = raw.trim(); if (!sentence) continue;
+    for (const [text, triggers] of splitSentence(sentence)){
+      n += 1;
+      phrases.push({id:"P-" + String(n).padStart(3,"0"), text, triggers,
+                    disposition:"", demo:"", blockedReason:"", blockedSection:"", plant:"", payoff:""});
+    }
+  }
+  return phrases;
+}
+function splitSentence(sentence){
+  const body = sentence.replace(/[.!?]+$/,"");
+  if ((body.match(/,/g) || []).length >= 2 && !/\b(and then|because|so that)\b/i.test(body)){
+    const items = body.split(/,|\band\b/).map(s => s.trim()).filter(Boolean);
+    if (items.length >= 3 && items.every(i => i.split(/\s+/).length <= 4))
+      return items.map(i => [i, ["list-item"]]);
+  }
+  const pieces = sentence.split(/,(?=\s)|\bbut\b|\bthen\b|\bso\b|\bbecause\b/i)
+                         .map(s => s.replace(/^[\s,]+|[\s,]+$/g,"")).filter(Boolean);
+  if (pieces.length <= 1) return [[sentence, toneFlags(sentence)]];
+  return pieces.map(p => {
+    const t = ["clause"].concat(toneFlags(p));
+    if (p.split(/\s+/).length <= 5) t.push("merge-candidate");
+    return [p, t];
+  });
+}
+const PROBLEM_WORDS = ["pain","ache","stiff","worse","struggle","can't","cannot","tired","swollen"];
+const SOLUTION_WORDS = ["relief","finally","again","easier","back to","no longer","without"];
+function toneFlags(text){
+  const low = text.toLowerCase(), flags = [];
+  if (PROBLEM_WORDS.some(w => low.includes(w))) flags.push("problem-language");
+  if (SOLUTION_WORDS.some(w => low.includes(w))) flags.push("solution-language");
+  if (/\b\d+([.,]\d+)?%?\b/.test(text)) flags.push("number");
+  if (flags.includes("problem-language") && flags.includes("solution-language")) flags.push("REVIEW:tone-shift");
+  return flags;
+}
+
+/* §27B dispositions and reconciliation */
+function validateDisposition(value){
+  if (!value) return "no disposition — silence is not a legal state (§27B)";
+  if (/^CUT\b/i.test(value)) return "CUT is withdrawn as an agent disposition; use BLOCKED with its reason (§27B)";
+  if (/^(BR|TH|MECH)-\d+[A-Za-z]?$/.test(value)) return null;
+  if (/^MERGED→P-\d+$/.test(value)) return null;
+  if (value === "BLOCKED") return null;
+  return "“" + value + "” is not a §27B disposition (BR-nn · TH-nn · MECH-nn · MERGED→P-nnn · BLOCKED)";
+}
+function reconcile(phrases){
+  const beats = new Set(), merges = [], th = [], unpaid = [];
+  let uncovered = 0, blocked = 0;
+  const paid = new Set(phrases.filter(p => p.payoff).map(p => p.payoff));
+  for (const p of phrases){
+    const d = p.disposition;
+    if (!d){ uncovered++; continue; }
+    if (d === "BLOCKED"){ blocked++; continue; }
+    if (d.startsWith("MERGED")){ merges.push(p.id); continue; }
+    if (d.startsWith("TH-")) th.push(d);
+    beats.add(d);
+  }
+  for (const p of phrases) if (p.plant && !paid.has(p.plant)) unpaid.push(p.id + "→" + p.plant);
+  const ids = phrases.map(p => p.id);
+  return {
+    first: ids[0] || "P-000", last: ids[ids.length-1] || "P-000",
+    beats: beats.size, merges: merges.sort(), th: [...new Set(th)].sort(),
+    uncovered, blocked, unpaid: unpaid.sort(),
+    delivered: uncovered === 0,
+  };
+}
+function reconLine(r){
+  return [
+    r.first + "–" + r.last + " → " + r.beats + " beats",
+    "merged: " + (r.merges.length ? r.merges.join(", ") : "none"),
+    "TH-carried: " + (r.th.length ? r.th.join(", ") : "none"),
+    "uncovered: " + r.uncovered,
+    "blocked: " + r.blocked,
+    "unpaid plants: " + (r.unpaid.length ? r.unpaid.join(", ") : "none"),
+  ].join(" · ");
+}
+function auditPhrases(phrases){
+  const problems = [], ids = new Set(phrases.map(p => p.id));
+  for (const p of phrases){
+    const err = validateDisposition(p.disposition);
+    if (err) problems.push([p.id, err]);
+    if (p.disposition === "BLOCKED" && !(p.blockedReason && p.blockedSection))
+      problems.push([p.id, "BLOCKED carries no reason and section (§27B)"]);
+    if (p.disposition.startsWith("MERGED")){
+      const target = p.disposition.split("→").pop();
+      if (!ids.has(target)) problems.push([p.id, "MERGED into " + target + ", which is not in the inventory"]);
+    }
+  }
+  for (const prefix of ["BR","TH","MECH"]){
+    const nums = phrases.filter(p => p.disposition.startsWith(prefix + "-"))
+      .map(p => parseInt(p.disposition.split("-")[1], 10)).filter(n => !isNaN(n)).sort((a,b) => a-b);
+    if (!nums.length) continue;
+    for (let n = nums[0]; n <= nums[nums.length-1]; n++)
+      if (!nums.includes(n)) problems.push(["act map", prefix + " numbering has a gap at " + prefix + "-" + String(n).padStart(2,"0") + " (§27B)"]);
+  }
+  return problems;
+}
+
+/* E4 act-map row schema */
+const ROW_REQUIRED = ["beat_id","act","type","register","location_id","story_day",
+                      "capture_event_id","duration","product_state","visibility"];
+function validateRows(rows){
+  const problems = [], seen = new Set();
+  let carriesProduct = false;
+  for (const row of rows){
+    const label = row.beat_id || "row";
+    for (const f of ROW_REQUIRED)
+      if (row[f] === "" || row[f] === undefined || row[f] === null)
+        problems.push([label, "missing required field " + f + " (E4)"]);
+    if (seen.has(row.beat_id)) problems.push([label, "duplicate beat_id"]);
+    seen.add(row.beat_id);
+    if (row.type && !BEAT_TYPES.includes(row.type)) problems.push([label, "type “" + row.type + "” is not an E4 beat type"]);
+    if (row.product_state && !PRODUCT_STATES.includes(row.product_state)) problems.push([label, "product_state “" + row.product_state + "” is not an E4 value"]);
+    if (row.visibility && !VISIBILITY.includes(row.visibility)) problems.push([label, "visibility “" + row.visibility + "” is not an E4 value"]);
+    if (row.wardrobe_ref && !row.story_day) problems.push([label, "wardrobe_ref with no story_day (E4)"]);
+    if (row.type === "TH" && !row.duration) problems.push([label, "talking head with no duration (§28H gate)"]);
+    if ((row.product_state || "absent") !== "absent") carriesProduct = true;
+  }
+  if (rows.length && !carriesProduct)
+    problems.push(["act map", "no beat carries the product — first appearance unlocated (§9, §18 step 5)"]);
+  return problems;
+}
+
+/* ---------- the example build ---------- */
+function exampleBuild(){
+  const script = "Braces, creams, magnets, patches. Nothing worked.\n" +
+    "Every morning I stood at the top of the stairs and counted to three.\n" +
+    "Then my physio showed me something different.\n" +
+    "It sits under the joint and takes the load before the joint does.\n" +
+    "Two weeks later I was carrying the shopping up in one trip.";
+  const phrases = splitScript(script);
+  const plan = [
+    ["BR-01","SIDE-BY-SIDE"], ["BR-02","SIDE-BY-SIDE"], ["BR-03","SIDE-BY-SIDE"],
+    ["BR-04","SIDE-BY-SIDE"], ["TH-01",""], ["BR-05","ANCHOR"], ["TH-02",""],
+    ["MECH-01","SENSE: load ache → RELIEF: the load lands on the band"], ["BR-06","LOAD"],
+  ];
+  phrases.forEach((p, i) => { if (plan[i]){ p.disposition = plan[i][0]; p.demo = plan[i][1]; } });
+  const spec = [
+    ["BR-01","BR","doc","L-01","1","E-01",5,"absent","CONCEALED"],
+    ["BR-02","BR","doc","L-01","1","E-01",5,"absent","CONCEALED"],
+    ["BR-03","BR","doc","L-01","1","E-01",5,"absent","CONCEALED"],
+    ["BR-04","BR","doc","L-01","1","E-01",5,"absent","CONCEALED"],
+    ["TH-01","TH","m1","L-02","1","E-02",5,"absent","CONCEALED"],
+    ["BR-05","BR","doc","L-03","1","E-03",5,"absent","CONCEALED"],
+    ["TH-02","TH","m1","L-02","2","E-04",5,"held","VISIBLE"],
+    ["MECH-01","MECH","ANAT-STRESS","L-02","2","E-04",3,"worn","VISIBLE"],
+    ["BR-06","BR","doc","L-04","3","E-05",5,"worn","REVEAL"],
+  ];
+  const rows = spec.map(([beat_id,type,register,location_id,story_day,capture_event_id,duration,product_state,visibility]) => ({
+    beat_id, act:"1", type, register, rig: type === "BR" ? "R1" : "R3C",
+    location_id, story_day, capture_event_id, duration, product_state, visibility,
+    wardrobe_ref: "W-" + story_day, frame_side:"left", framing_step:"medium",
+  }));
+  const t2i = [BY_ID["CAM-LOCK"], null, BY_ID["CAP-A"], BY_ID["CAP-FILE"]]
+    .map(s => s ? s.body : "A woman in her sixties on the front step of a terraced house, two shopping bags in one hand, the door key already in the other. Mid-afternoon, overcast. Medium, from the pavement, camera left. The support band is on her left knee, already fully and correctly in place, visible below the hem of her skirt.")
+    .join("\n\n");
+  const i2v = JSON.stringify({
+    subject: BY_ID["INHERIT-SUBJ"] ? BY_ID["INHERIT-SUBJ"].body : "Exactly as in the start frame, unchanged in every respect.",
+    motion: "She shifts both bags into her left hand, takes the single step up in one movement without reaching for the rail, and is through the doorway as the clip ends. The step is completed, not begun.",
+    camera: { movement: BY_ID["RIG-R1"] ? BY_ID["RIG-R1"].body : "", framing: "Medium, from the pavement, camera left, held." },
+    lighting: BY_ID["INHERIT-CAP"] ? BY_ID["INHERIT-CAP"].body : "",
+    negatives: "no rail contact, no hand on the doorframe, no pause at the top of the step, no slow motion, no colour grading, no vignette, no logo garble",
+  }, null, 2);
+  return {
+    name: "Demo Support Band", isExample: true, script, phrases, rows,
+    declared: { side:"left", mechanism_claim:"protection", format:"talking heads", mode:"1" },
+    beats: {
+      "BR-06": { t2i, i2v, dialogue:"", duration:5, pace:"brisk", model:"kling3_0",
+                 line:"Two weeks later I was carrying the shopping up in one trip.",
+                 boundMove:"", closure:"", klingDirect:false },
+      "TH-02": { t2i:"", i2v:"", dialogue:"Then my physio showed me something different.",
+                 duration:5, pace:"brisk", model:"kling3_0",
+                 line:"Then my physio showed me something different.",
+                 boundMove:"", closure:"", klingDirect:false },
+    },
+  };
+}
+
+/* ---------- state ---------- */
+let state = exampleBuild();
+let tab = "phrases";
+let selectedBeat = "BR-06";
+let db = null, saveTimer = null, writing = false, dirty = false;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const STEPS = [
+  [1,"Absorb the inspo video","DET","§42 → Absorption Sheet"],
+  [2,"Absorb script and product","DET","phrase inventory, every lock"],
+  [3,"Cast everyone who recurs","DET","§19 sheets + panel check"],
+  [4,"Location maps","DET","plates for PLATED only"],
+  [5,"Act map and wardrobe map","DET","coverage, story days"],
+  [6,"Hooks, one by one","HG","the only gate"],
+  [7,"B-roll and body acts","DET","§30E order, reconciliation"],
+  [8,"CapCut block","DET","last and separate"],
+];
+
+function liveStep(){
+  if (!state.phrases.length) return 2;
+  if (reconcile(state.phrases).uncovered > 0) return 2;
+  if (validateRows(state.rows).length) return 5;
+  return 7;
+}
+
+function renderSteps(){
+  const live = liveStep();
+  $("steps").innerHTML = STEPS.map(([n,name,klass,carries]) => {
+    const cls = klass === "HG" ? "step gate" : (n === live ? "step live" : "step");
+    return '<li class="' + cls + '"><span class="n">' + n + '</span>' +
+      '<span class="t">' + esc(name) + '<small>' + klass + ' · ' + esc(carries) + '</small></span></li>';
+  }).join("");
+}
+
+const TABS = [
+  ["script","Script"], ["phrases","Phrases"], ["actmap","Act map"],
+  ["beats","Beats"], ["strings","Strings"],
+];
+function renderTabs(){
+  const counts = {
+    phrases: state.phrases.length, actmap: state.rows.length,
+    beats: Object.keys(state.beats).length, strings: STRINGS.length,
+  };
+  $("tabs").innerHTML = TABS.map(([id,label]) =>
+    '<button class="tab" role="tab" data-tab="' + id + '" aria-selected="' + (tab === id) + '">' +
+    esc(label) + (counts[id] != null ? '<span class="badge">' + counts[id] + '</span>' : '') +
+    '</button>').join("");
+}
+
+/* ---------- panes ---------- */
+function renderPane(){
+  const pane = $("pane");
+  if (tab === "script") pane.innerHTML = paneScript();
+  else if (tab === "phrases") pane.innerHTML = panePhrases();
+  else if (tab === "actmap") pane.innerHTML = paneActMap();
+  else if (tab === "beats") pane.innerHTML = paneBeats();
+  else pane.innerHTML = paneStrings();
+  wirePane();
+}
+
+function paneScript(){
+  return '<div class="panel-hd"><h3>Script — absorbed as written</h3>' +
+    '<button class="btn primary" id="splitBtn">Split into phrases</button></div>' +
+    '<div class="panel-bd">' +
+    '<p class="hint">§18 step 2. The split is mechanical — sentence ends, clause boundaries, and the ' +
+    'list-of-nouns rule that makes <code>"Braces, creams, magnets, patches."</code> four beats with no ' +
+    'exceptions. Triggers that are not mechanical (a tone shift, a punchline) come back tagged ' +
+    '<code>REVIEW</code> rather than guessed. Splitting replaces the phrase inventory; dispositions are kept ' +
+    'where a phrase ID still matches.</p>' +
+    '<textarea id="scriptBox" style="min-height:220px" spellcheck="false">' + esc(state.script) + '</textarea>' +
+    '</div>';
+}
+
+function panePhrases(){
+  const r = reconcile(state.phrases);
+  const problems = auditPhrases(state.phrases);
+  const byId = Object.fromEntries(problems.map(p => [p[0], p[1]]));
+  if (!state.phrases.length)
+    return '<div class="panel-hd"><h3>Phrase inventory</h3></div><div class="panel-bd">' +
+      '<p class="empty">No phrases yet. Paste a script on the Script tab and split it.</p></div>';
+  const rows = state.phrases.map(p => {
+    const bad = byId[p.id] && p.disposition;
+    const cls = p.disposition === "BLOCKED" ? "blocked" : (byId[p.id] ? "bad" : "");
+    return '<tr class="' + cls + '">' +
+      '<td class="id">' + p.id + '</td>' +
+      '<td class="txt">' + esc(p.text) +
+        (p.triggers.length ? '<div>' + p.triggers.map(t =>
+          '<span class="trig' + (t.startsWith("REVIEW") ? ' review' : '') + '">' + esc(t) + '</span>').join("") + '</div>' : '') +
+        (byId[p.id] ? '<div style="color:var(--fail);font-size:11.5px;margin-top:3px">' + esc(byId[p.id]) + '</div>' : '') +
+      '</td>' +
+      '<td><input type="text" style="width:120px" data-phrase="' + p.id + '" data-field="disposition" value="' + esc(p.disposition) + '" placeholder="BR-01"></td>' +
+      '<td><input type="text" style="width:150px" data-phrase="' + p.id + '" data-field="demo" value="' + esc(p.demo) + '" placeholder="DEMO"></td>' +
+      (p.disposition === "BLOCKED"
+        ? '<td><input type="text" style="width:150px" data-phrase="' + p.id + '" data-field="blockedReason" value="' + esc(p.blockedReason) + '" placeholder="why it cannot be covered"></td>' +
+          '<td><input type="text" style="width:64px" data-phrase="' + p.id + '" data-field="blockedSection" value="' + esc(p.blockedSection) + '" placeholder="§43A"></td>'
+        : '<td colspan="2" class="sec" style="color:var(--muted)">—</td>') +
+      '</tr>';
+  }).join("");
+  return '<div class="panel-hd"><h3>Phrase inventory — §27B coverage ledger</h3>' +
+    '<span class="chip ' + (r.delivered ? "ok" : "bad") + '">' + (r.delivered ? "delivered" : "undelivered") + '</span></div>' +
+    '<div class="panel-bd">' +
+    '<p class="hint">Every row carries exactly one disposition. <code>CUT</code> is withdrawn — a line is never ' +
+    'removed to solve a coverage problem, so <code>BLOCKED</code> carries its reason and its section and the ' +
+    'advertiser moves it. Uncovered must read zero or the act is undelivered.</p>' +
+    '<div class="tablewrap"><table><thead><tr>' +
+    '<th>ID</th><th>Phrase</th><th>Disposition</th><th>DEMO</th><th>Blocked reason</th><th>§</th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+    '<div class="recon' + (r.delivered ? '' : ' bad') + '" style="margin-top:12px">Reconciliation — ' + esc(reconLine(r)) + '</div>' +
+    '</div>';
+}
+
+const ROW_FIELDS = [
+  ["beat_id","text"], ["type","select",BEAT_TYPES], ["register","text"], ["rig","text"],
+  ["location_id","text"], ["story_day","text"], ["capture_event_id","text"],
+  ["duration","text"], ["product_state","select",PRODUCT_STATES],
+  ["visibility","select",VISIBILITY], ["wardrobe_ref","text"],
+];
+function paneActMap(){
+  const problems = validateRows(state.rows);
+  const rows = state.rows.map((row, i) => '<tr>' + ROW_FIELDS.map(([f, kind, options]) => {
+    if (kind === "select")
+      return '<td><select data-row="' + i + '" data-field="' + f + '">' +
+        options.map(o => '<option' + (row[f] === o ? ' selected' : '') + '>' + o + '</option>').join("") + '</select></td>';
+    const width = f === "beat_id" ? 78 : (f === "register" ? 92 : 62);
+    return '<td><input type="text" style="width:' + width + 'px" data-row="' + i + '" data-field="' + f + '" value="' + esc(row[f] == null ? "" : row[f]) + '"></td>';
+  }).join("") + '<td><button class="btn" data-drop="' + i + '" title="Remove row">×</button></td></tr>').join("");
+  return '<div class="panel-hd"><h3>Act map — E4 rows</h3>' +
+    '<span class="chip">' + new Set(state.rows.map(r => r.story_day)).size + ' story days</span>' +
+    '<span class="chip">' + new Set(state.rows.map(r => r.capture_event_id)).size + ' capture events</span>' +
+    '<button class="btn" id="syncRows">Sync from dispositions</button>' +
+    '<button class="btn" id="addRow">Add row</button></div>' +
+    '<div class="panel-bd">' +
+    '<p class="hint">§18 step 5 is where three expensive things are caught: the product’s first appearance is ' +
+    'located, screen direction and framing steps are assigned, and unsupported claims are blocked. ' +
+    '<code>story_day</code> and <code>capture_event_id</code> are mandatory on every row — a row carrying a ' +
+    '<code>wardrobe_ref</code> but no <code>story_day</code> is the exact failure E4 was written to remove.</p>' +
+    (state.rows.length
+      ? '<div class="tablewrap"><table><thead><tr>' +
+        ROW_FIELDS.map(([f]) => '<th>' + f.replace(/_/g," ") + '</th>').join("") + '<th></th>' +
+        '</tr></thead><tbody>' + rows + '</tbody></table></div>'
+      : '<p class="empty">No rows. “Sync from dispositions” builds one row per BR/TH/MECH beat.</p>') +
+    '</div>';
+}
+
+function paneBeats(){
+  const ids = [...new Set(state.rows.map(r => r.beat_id).concat(Object.keys(state.beats)))].sort();
+  if (!ids.length)
+    return '<div class="panel-hd"><h3>Beats</h3></div><div class="panel-bd">' +
+      '<p class="empty">No beats yet — build the act map first.</p></div>';
+  if (!ids.includes(selectedBeat)) selectedBeat = ids[0];
+  const beat = state.beats[selectedBeat] || {};
+  const row = state.rows.find(r => r.beat_id === selectedBeat) || {};
+  const picker = ids.map(id => {
+    const b = state.beats[id] || {};
+    const written = b.t2i || b.i2v;
+    return '<button class="pick" data-beat="' + id + '" aria-current="' + (id === selectedBeat) + '">' +
+      '<b>' + id + '</b><span>' + (written ? charCount(b.t2i) + " / " + charCount(b.i2v) + " chars" : "not written") + '</span></button>';
+  }).join("");
+  const field = (label, name, value, width) =>
+    '<div class="field"><label for="f_' + name + '">' + label + '</label>' +
+    '<input id="f_' + name + '" type="text" style="width:' + width + 'px" data-beat-field="' + name + '" value="' + esc(value == null ? "" : value) + '"></div>';
+  return '<div class="panel-hd"><h3>Beat ' + esc(selectedBeat) + '</h3>' +
+    '<span class="chip">' + esc(row.type || "—") + ' · ' + esc(row.register || "—") + '</span>' +
+    '<span class="chip">' + esc(row.product_state || "—") + ' · ' + esc(row.visibility || "—") + '</span></div>' +
+    '<div class="panel-bd"><div class="split">' +
+    '<div class="picker">' + picker + '</div>' +
+    '<div>' +
+      '<div class="fieldrow">' +
+        field("Line label", "line", beat.line, 240) +
+        field("Model", "model", beat.model || "kling3_0", 110) +
+        '<div class="field"><label for="f_duration">Duration</label><select id="f_duration" data-beat-field="duration">' +
+          [5,10].map(d => '<option' + (Number(beat.duration) === d ? ' selected' : '') + '>' + d + '</option>').join("") + '</select></div>' +
+        '<div class="field"><label for="f_pace">Pace</label><select id="f_pace" data-beat-field="pace">' +
+          ["brisk","unhurried"].map(p => '<option' + (beat.pace === p ? ' selected' : '') + '>' + p + '</option>').join("") + '</select></div>' +
+        '<div class="field"><label for="f_kling">Route</label><select id="f_kling" data-beat-field="klingDirect">' +
+          '<option value="false"' + (beat.klingDirect ? "" : " selected") + '>Higgsfield</option>' +
+          '<option value="true"' + (beat.klingDirect ? " selected" : "") + '>Kling-direct</option></select></div>' +
+      '</div>' +
+      '<div class="fieldrow">' +
+        field("Bound move word", "boundMove", beat.boundMove, 130) +
+        field("Closure word", "closure", beat.closure, 130) +
+      '</div>' +
+      '<div class="editor"><div class="lbl"><h4>dialogue</h4>' +
+        '<span class="count">' + wordCount(beat.dialogue) + ' words</span></div>' +
+        '<textarea data-beat-field="dialogue" style="min-height:64px" spellcheck="false">' + esc(beat.dialogue) + '</textarea></div>' +
+      '<div class="editor"><div class="lbl"><h4>T2I — the frame (§6: no ceiling)</h4>' +
+        '<span class="count' + (beat.klingDirect && charCount(beat.t2i) > KLING_CEILING ? ' bad' : '') + '">' + charCount(beat.t2i) + ' chars</span></div>' +
+        '<textarea data-beat-field="t2i" style="min-height:190px" spellcheck="false">' + esc(beat.t2i) + '</textarea></div>' +
+      '<div class="editor"><div class="lbl"><h4>I2V — change over time only</h4>' +
+        '<span class="count' + (charCount(beat.i2v) > KLING_CEILING ? ' bad' : '') + '">' + charCount(beat.i2v) + ' chars</span></div>' +
+        '<textarea data-beat-field="i2v" style="min-height:220px" spellcheck="false">' + esc(beat.i2v) + '</textarea></div>' +
+    '</div></div></div>';
+}
+
+function paneStrings(){
+  return '<div class="panel-hd"><h3>Appendix A — string library</h3>' +
+    '<input type="text" id="sSearch" placeholder="search id, section or text" style="width:220px">' +
+    '<label class="sec"><input type="checkbox" id="sPattern"> patterns only</label></div>' +
+    '<div class="panel-bd">' +
+    '<p class="hint">Roughly two-thirds of prompt content is invariant across same-rig, same-location beats. ' +
+    'Invariant content is compressed once, tested once and locked here — never trimmed freehand. Paste ' +
+    'NORMATIVE blocks verbatim with only the named substitutions. A <code>!</code> marks a string whose ' +
+    'declared count no longer matches its block.</p>' +
+    '<div class="slist" id="slist"></div></div>';
+}
+
+function renderStringList(){
+  const list = $("slist"); if (!list) return;
+  const q = ($("sSearch") ? $("sSearch").value : "").trim().toLowerCase();
+  const patternsOnly = $("sPattern") ? $("sPattern").checked : false;
+  const hits = STRINGS.filter(s => {
+    if (patternsOnly && !s.isPattern) return false;
+    if (!q) return true;
+    return (s.id + " " + s.section + " " + s.description + " " + s.body).toLowerCase().includes(q);
+  }).slice(0, 80);
+  list.innerHTML = hits.length ? hits.map(s =>
+    '<details class="sitem"><summary><b>' + s.id + (s.countOk ? "" : " !") + '</b>' +
+    '<span class="chip mono">' + s.declared + (s.countOk ? "" : " ≠ " + s.actual) + '</span>' +
+    (s.isPattern ? '<span class="chip">PATTERN</span>' : '') +
+    '<span class="d">' + esc(s.description) + '</span></summary>' +
+    '<pre>' + esc(s.body) + '</pre>' +
+    '<div class="acts"><button class="btn" data-insert="' + s.id + '">Insert into T2I</button>' +
+    '<button class="btn" data-insert-i2v="' + s.id + '">Insert into I2V</button>' +
+    (s.slots.length ? '<span class="chip">slots: ' + s.slots.map(esc).join(", ") + '</span>' : '') +
+    '</div></details>').join("")
+    : '<p class="empty">Nothing matches “' + esc(q) + '”.</p>';
+}
+
+/* ---------- gate panel ---------- */
+function renderGates(){
+  let scope = "", gates = [];
+  if (tab === "beats"){
+    const beat = state.beats[selectedBeat] || {};
+    const row = state.rows.find(r => r.beat_id === selectedBeat) || {};
+    scope = selectedBeat + " — pre-submission (§37, §28H, E1, E5)";
+    if (beat.t2i) gates.push(prefix("t2i", checkCharBudget(beat.t2i, !!beat.klingDirect)));
+    if (beat.i2v) gates.push(prefix("i2v", checkCharBudget(beat.i2v, true)));
+    for (const [label, text] of [["t2i", beat.t2i], ["i2v", beat.i2v]]){
+      if (!text) continue;
+      const slots = slotTokens(text);
+      if (slots.length)
+        gates.push(gate(label + ": slots","FAIL", slots.join(", "),
+          slots.map(s => "[" + s + "] ← " + (SLOT_SOURCES[s] || "UNDECLARED — not in the E5 manifest")).join(" · ")));
+      const brackets = residualBrackets(text).filter(b => !slots.includes(b.slice(1,-1)));
+      if (brackets.length)
+        gates.push(gate(label + ": brackets","FAIL", brackets.length + " fill instruction(s) left in the prompt",
+          brackets.map(b => b.slice(0,54)).join(" · ")));
+    }
+    if (beat.dialogue){
+      gates.push(checkWordBudget(beat.dialogue, Number(beat.duration) || 5, beat.pace || "brisk", !!beat.boundMove));
+      gates.push(checkPunctuation(beat.dialogue));
+      gates.push(checkSyncAnchor(beat.dialogue, beat.boundMove, beat.closure));
+    }
+    if (row.product_state === "worn")
+      gates.push(gate("slots: worn","QUEUED","[SITE] and [SIDE] are mandatory on a worn beat (E5)",""));
+    if ((row.frame_side || "").toLowerCase() === "rear")
+      gates.push(gate("slots: rear","QUEUED","[BAND-INNER] and [REAR-PATH] mandatory on a rear beat (E5)",""));
+    if (row.type === "TH") for (const n of ["closure_sync","entry_latency","voice_drift"])
+      gates.push(gate(n,"QUEUED", QUEUED_NOTES[n], ""));
+    if (row.type === "BR") for (const n of ["face_state","broll_cut_delta","scene_hold"])
+      gates.push(gate(n,"QUEUED", QUEUED_NOTES[n], ""));
+    if (!beat.t2i && !beat.i2v)
+      gates.push(gate("delivery","FAIL","no prompt text","A description of a prompt is not a prompt (§16)"));
+    if (!beat.line)
+      gates.push(gate("line label","FAIL","missing","A prompt delivered without its line label is undelivered (§26)"));
+  } else if (tab === "actmap"){
+    scope = "Act map — E4 schema and the §14A W4 chain";
+    const problems = validateRows(state.rows);
+    gates = problems.length
+      ? problems.map(([where, msg]) => gate(where, "FAIL", msg, ""))
+      : [gate("act map","PASS", state.rows.length + " rows clean", "")];
+  } else if (tab === "strings"){
+    scope = "Appendix A — E10 count check";
+    const drifted = STRINGS.filter(s => !s.countOk);
+    gates = [
+      gate("strings","PASS", STRINGS.length + " strings parsed from the Standards",""),
+      gate("counts", drifted.length ? "FAIL" : "PASS",
+        drifted.length ? drifted.length + " declared counts no longer match their block" : "every count matches",
+        drifted.length ? drifted.slice(0,6).map(s => s.id).join(", ") + (drifted.length > 6 ? " …" : "") : ""),
+      gate("patterns","PASS", STRINGS.filter(s => s.isPattern).length + " PATTERN strings carry slots",""),
+    ];
+  } else {
+    scope = "Coverage — §27B";
+    const r = reconcile(state.phrases);
+    const problems = auditPhrases(state.phrases);
+    gates = [
+      gate("uncovered", r.uncovered === 0 ? "PASS" : "FAIL", r.uncovered + " phrase(s) without a disposition",
+        r.uncovered ? "Uncovered must read zero or the act is undelivered (§27B)" : ""),
+      gate("blocked", r.blocked ? "WARN" : "PASS", r.blocked + " BLOCKED",
+        r.blocked ? "Reported, never resolved — the advertiser moves it (§27B)" : ""),
+      gate("plants", r.unpaid.length ? "FAIL" : "PASS",
+        r.unpaid.length ? r.unpaid.join(", ") : "no unpaid plants", ""),
+    ].concat(problems.map(([where, msg]) => gate(where, "FAIL", msg, "")));
+  }
+  $("gateScope").textContent = scope;
+  $("gateList").innerHTML = gates.map(g =>
+    '<div class="gate"><span class="st ' + g.status + '">' + g.status + '</span>' +
+    '<span><span class="nm">' + esc(g.name) + '</span>' +
+    '<span class="dt"> — ' + esc(g.detail) + '</span>' +
+    (g.fix ? '<div class="fx">→ ' + esc(g.fix) + '</div>' : '') + '</span></div>').join("")
+    || '<p class="empty">Nothing to gate yet.</p>';
+}
+const QUEUED_NOTES = {
+  closure_sync: "frame-step at the closure and stress word — HUMAN (E1)",
+  entry_latency: "silence detection at −40 dB, first word ≤ 0.5s — no instrument here (E1)",
+  voice_drift: "pitch median + tempo vs act baseline, ±15% — no instrument here (E1)",
+  face_state: "first frame vs FACE/NOFACE header — HUMAN (E1)",
+  broll_cut_delta: "luminance delta at the cut vs the TH baseline — no instrument here (E1)",
+  scene_hold: "first frame vs the Location Sheet — HUMAN (E1)",
+};
+function prefix(label, g){ return gate(label + ": " + g.name, g.status, g.detail, g.fix); }
+
+/* ---------- wiring ---------- */
+function render(){ renderSteps(); renderTabs(); renderPane(); renderGates(); renderChips(); }
+function renderChips(){
+  $("verChip").textContent = "Standards V" + DATA.version;
+  $("verFoot").textContent = "V" + DATA.version;
+  $("exampleChip").hidden = !state.isExample;
+  const chip = $("saveChip");
+  if (!db){ chip.textContent = "local only"; chip.className = "chip"; }
+  else if (writing || dirty){ chip.textContent = "saving…"; chip.className = "chip warn"; }
+  else { chip.textContent = "saved"; chip.className = "chip ok"; }
+}
+
+function touch(){ state.isExample = false; dirty = true; renderChips(); scheduleSave(); }
+
+function wirePane(){
+  const pane = $("pane");
+  const splitBtn = $("splitBtn");
+  if (splitBtn) splitBtn.addEventListener("click", () => {
+    const kept = Object.fromEntries(state.phrases.map(p => [p.id, p]));
+    state.script = $("scriptBox").value;
+    state.phrases = splitScript(state.script).map(p => {
+      const old = kept[p.id];
+      if (old && old.text === p.text)
+        return Object.assign(p, {disposition: old.disposition, demo: old.demo,
+          blockedReason: old.blockedReason, blockedSection: old.blockedSection});
+      return p;
+    });
+    tab = "phrases"; touch(); render();
+  });
+  const box = $("scriptBox");
+  if (box) box.addEventListener("input", () => { state.script = box.value; touch(); });
+
+  pane.querySelectorAll("[data-phrase]").forEach(el => {
+    el.addEventListener("input", () => {
+      const p = state.phrases.find(x => x.id === el.dataset.phrase);
+      if (!p) return;
+      p[el.dataset.field] = el.value;
+      touch(); renderGates();
+    });
+    el.addEventListener("change", () => { render(); refocus(el); });
+  });
+
+  pane.querySelectorAll("[data-row]").forEach(el => {
+    el.addEventListener("input", () => {
+      const row = state.rows[Number(el.dataset.row)];
+      if (!row) return;
+      row[el.dataset.field] = el.dataset.field === "duration" ? (el.value === "" ? "" : Number(el.value)) : el.value;
+      touch(); renderGates();
+    });
+    el.addEventListener("change", () => { renderGates(); renderSteps(); });
+  });
+  pane.querySelectorAll("[data-drop]").forEach(el => el.addEventListener("click", () => {
+    state.rows.splice(Number(el.dataset.drop), 1); touch(); render();
+  }));
+  const sync = $("syncRows");
+  if (sync) sync.addEventListener("click", () => {
+    const wanted = [...new Set(state.phrases.map(p => p.disposition)
+      .filter(d => /^(BR|TH|MECH)-\d+/.test(d)))].sort();
+    const existing = Object.fromEntries(state.rows.map(r => [r.beat_id, r]));
+    state.rows = wanted.map(id => existing[id] || {
+      beat_id: id, act: "1", type: id.split("-")[0] === "MECH" ? "MECH" : id.split("-")[0],
+      register: "", rig: "", location_id: "", story_day: "", capture_event_id: "",
+      duration: 5, product_state: "absent", visibility: "CONCEALED", wardrobe_ref: "",
+      frame_side: "", framing_step: "",
+    });
+    touch(); render();
+  });
+  const add = $("addRow");
+  if (add) add.addEventListener("click", () => {
+    state.rows.push({beat_id: "", act: "1", type: "BR", register: "", rig: "", location_id: "",
+      story_day: "", capture_event_id: "", duration: 5, product_state: "absent",
+      visibility: "CONCEALED", wardrobe_ref: "", frame_side: "", framing_step: ""});
+    touch(); render();
+  });
+
+  pane.querySelectorAll("[data-beat]").forEach(el => el.addEventListener("click", () => {
+    selectedBeat = el.dataset.beat; render();
+  }));
+  pane.querySelectorAll("[data-beat-field]").forEach(el => {
+    const apply = () => {
+      const beat = state.beats[selectedBeat] || (state.beats[selectedBeat] = {});
+      const field = el.dataset.beatField;
+      let value = el.value;
+      if (field === "klingDirect") value = el.value === "true";
+      if (field === "duration") value = Number(el.value);
+      beat[field] = value;
+      touch(); renderGates(); updateCounts();
+    };
+    el.addEventListener("input", apply);
+    el.addEventListener("change", apply);
+  });
+
+  const search = $("sSearch"), patterns = $("sPattern");
+  if (search){
+    renderStringList();
+    search.addEventListener("input", renderStringList);
+    patterns.addEventListener("change", renderStringList);
+    $("slist").addEventListener("click", e => {
+      const t2i = e.target.closest("[data-insert]"), i2v = e.target.closest("[data-insert-i2v]");
+      if (!t2i && !i2v) return;
+      const id = (t2i || i2v).dataset.insert || (t2i || i2v).dataset.insertI2v;
+      const block = BY_ID[id]; if (!block) return;
+      const beat = state.beats[selectedBeat] || (state.beats[selectedBeat] = {});
+      const field = t2i ? "t2i" : "i2v";
+      beat[field] = (beat[field] ? beat[field].replace(/\s*$/,"") + "\n\n" : "") + block.body;
+      touch();
+      tab = "beats"; render();
+    });
+  }
+}
+function updateCounts(){
+  const beat = state.beats[selectedBeat] || {};
+  document.querySelectorAll(".editor").forEach(ed => {
+    const area = ed.querySelector("textarea"); if (!area) return;
+    const field = area.dataset.beatField, count = ed.querySelector(".count");
+    if (!count) return;
+    if (field === "dialogue") count.textContent = wordCount(beat.dialogue) + " words";
+    else {
+      const n = charCount(beat[field]);
+      count.textContent = n + " chars";
+      const over = (field === "i2v" || beat.klingDirect) && n > KLING_CEILING;
+      count.classList.toggle("bad", over);
+    }
+  });
+}
+function refocus(el){
+  const sel = "[data-phrase='" + el.dataset.phrase + "'][data-field='" + el.dataset.field + "']";
+  const next = document.querySelector(sel);
+  if (next){ next.focus(); try { next.setSelectionRange(next.value.length, next.value.length); } catch (e) {} }
+}
+
+$("tabs").addEventListener("click", e => {
+  const btn = e.target.closest("[data-tab]"); if (!btn) return;
+  tab = btn.dataset.tab; render();
+});
+$("resetBtn").addEventListener("click", () => {
+  if (!confirm("Replace the current build with the example? Anything unsaved is lost.")) return;
+  state = exampleBuild(); selectedBeat = "BR-06"; tab = "phrases"; dirty = true; scheduleSave(); render();
+});
+$("exportBtn").addEventListener("click", exportBuild);
+
+/* ---------- export (E9 file names, so it drops into a build tree) ---------- */
+async function exportBuild(){
+  const files = {
+    "phrase_inventory.json": JSON.stringify({phrases: state.phrases.map(p => ({
+      id: p.id, text: p.text, triggers: p.triggers, disposition: p.disposition, demo: p.demo,
+      blocked_reason: p.blockedReason, blocked_section: p.blockedSection,
+      plant: p.plant || "", payoff: p.payoff || "",
+    }))}, null, 2),
+    "act_map.json": JSON.stringify({declared: state.declared, rows: state.rows}, null, 2),
+    "script.txt": state.script,
+  };
+  for (const [id, beat] of Object.entries(state.beats)){
+    if (beat.t2i) files["beats/" + id + ".t2i.txt"] = beat.t2i;
+    if (beat.i2v) files["beats/" + id + ".i2v.json"] = beat.i2v;
+  }
+  const bundle = JSON.stringify({
+    build: state.name, standards: DATA.version,
+    reconciliation: reconLine(reconcile(state.phrases)),
+    files,
+  }, null, 2);
+  const downloads = await claude.use("downloads").catch(() => null);
+  if (downloads){
+    try {
+      await downloads.save({filename: slug(state.name) + "-build.json", data: bundle});
+      return;
+    } catch (e){ /* viewer declined or unavailable — fall through to the copy path */ }
+  }
+  try {
+    await navigator.clipboard.writeText(bundle);
+    alert("Build copied to the clipboard as JSON — paste it into your build tree.");
+  } catch (e){
+    alert("Could not save or copy the build here. Open the console tab and copy it from the log.");
+    console.log(bundle);
+  }
+}
+const slug = s => String(s || "build").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") || "build";
+
+/* ---------- persistence ---------- */
+function snapshot(){
+  return {
+    name: state.name, script: state.script, phrases: state.phrases,
+    rows: state.rows, declared: state.declared, isExample: !!state.isExample,
+    updatedAt: new Date().toISOString(),
+  };
+}
+function scheduleSave(){
+  if (!db) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(save, 700);
+}
+async function save(){
+  if (!db || writing) return;
+  writing = true; dirty = false; renderChips();
+  try {
+    await db.doc("builds/main").set(snapshot());
+    const beats = db.doc("builds/main").collection("beats");
+    for (const [id, beat] of Object.entries(state.beats))
+      await beats.doc(id).set(Object.assign({}, beat, {beat_id: id}));
+  } catch (e){
+    dirty = true;
+  } finally {
+    writing = false; renderChips();
+    if (dirty) scheduleSave();
+  }
+}
+
+(async function boot(){
+  render();
+  const capability = window.claude && window.claude.use ? await window.claude.use("db").catch(() => null) : null;
+  if (!capability) { renderChips(); return; }
+  db = capability;
+  try {
+    const doc = await db.doc("builds/main").get();
+    if (doc.exists){
+      const saved = doc.data();
+      state.name = saved.name || state.name;
+      state.script = saved.script || "";
+      state.phrases = saved.phrases || [];
+      state.rows = saved.rows || [];
+      state.declared = saved.declared || {};
+      state.isExample = false;
+      const beats = await db.doc("builds/main").collection("beats").get();
+      state.beats = {};
+      beats.docs.forEach(d => { state.beats[d.id] = d.data(); });
+      const ids = Object.keys(state.beats);
+      if (ids.length) selectedBeat = ids.sort()[0];
+    }
+  } catch (e){ /* keep the example build; the page works without the store */ }
+  render();
+})();
+</script>

@@ -36,6 +36,15 @@ pe fail BR-01 "came back plastic"   # E2 class, retry budget, decision
 pe lint               # E10 doc-lint over the Standards
 ```
 
+## The web console
+
+`web/console.src.html` is the browser front end, published at
+https://claude.ai/artifact/Tg8gix6v7GgWyhozD4gDGP. It ports the gates that are pure
+computation — char counts, the §28H table, the coverage ledger, E4 rows, slot tokens — and
+queues everything else exactly as `pe qa` does. Edit the `.src.html`, then
+`python3 tools/export_strings.py && python3 tools/build_console.py` and republish
+`web/console.html` to that URL. Never hand-edit `web/strings.json` or `web/console.html`.
+
 ## Build layout (E9)
 
 One beat, one pair of files, so §34 global corrections, coverage diffs and reissue passes run

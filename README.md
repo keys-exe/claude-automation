@@ -1,7 +1,12 @@
 # claude-automation
 
-Appendix E of the **AI Prompt Engineer Global Standards V7.49.8** made executable, plus the
-Claude Code layer that drives the §18 build flow.
+Appendix E of the **AI Prompt Engineer Global Standards V7.49.8** made executable: a web
+console, a CLI, and the Claude Code layer that drives the §18 build flow.
+
+**Beat Console — https://claude.ai/artifact/Tg8gix6v7GgWyhozD4gDGP**
+The same gates in a browser, no install. Split a script into phrases, disposition every one,
+build the act map, write beats with the character and word budgets live, and search all 239
+locked strings. Export drops straight into a build tree. Source in [`web/`](web/).
 
 The Standards describe how ads, VSLs, B-roll and talking heads are built. Appendix E is the
 machine half — a QA matrix bound to instruments, a failure taxonomy with retry budgets, a run
